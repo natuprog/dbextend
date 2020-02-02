@@ -2,16 +2,17 @@
 
     /*
         Extension of db to make personaliced query's more easy
-        Numbrer of hours wasted = 0.50;
+        Numbrer of hours wasted = 1.25;
     */
 
     require_once "db.php";
     require "dbextendintfc.php";
 
     class db_extended extends db implements idbextends{
+        
         private $msg;
 
-        public function __construct($host,$user,$pass,$db,$_msg){ 
+        public function __construct($host,$user,$pass,$db,$_msg){
             parent::__construct($host,$user,$pass,$db);
             if(isset($msg)){
                 $this -> msg = $_msg;
@@ -19,31 +20,37 @@
         }
 
         public function gethost(){
-            return parent::$host;
+            return $this->host;
         }
         public function sethost($_host){
-            parent::$host = $_host;
+            $this->host = $_host; 
         }
 
         public function insert($table, $columns, $values, $condition){
-            if(gettype($columns) == gettype($values) == "array"){
+
+            if(gettype($columns) == "array" && gettype($values) == "array"){
                 if( gettype($table) == "string" && sizeof($columns) == sizeof ($values)){
 
                     //Comprobations, then
                     $mesg = _INS[0] . $table;
-                    $mesg .= _INS[1];
+                    $mesg .= _PAR[0];
                     for ($i = 0 ; $i < sizeof($columns); $i++){
                         $mesg .= $columns[$i];
-                        $mesg .= _INS[2];
+                        if($i != sizeof($columns)-1){
+                            $mesg .= _PAR[1];
+                        }
                     }
                     
-                    $mesg .= _INS[3];
+                    $mesg .= _PAR[2];
                     $mesg .= _INS[4];
-
+                    $mesg .= _INS[1];
                     for($i = 0; $i < sizeof($values); $i++){
                         $mesg .= $values[$i];
-                        $mesg .= _INS[2];
+                        if($i != sizeof($values)-1){
+                            $mesg .= _INS[2];
+                        }
                     }
+                    $mesg .= _INS[3];
 
                     if(isset($condition)){
                         $mesg .= $condition;
@@ -58,21 +65,24 @@
             $mesg = "";
             if(gettype($table) == "string"){
                 $mesg .= _SEL[0];
-                if(isset($columns)){ 
-                    $mesg .= _SEL[2];
+                if($columns != [""]){ 
+                    $mesg .= _PAR[0];
                     for ($i = 0; $i < sizeof($columns); $i++){
                         $mesg .= $columns[$i];
-                        $mesg .= _SEL[3];
+                        if($i != sizeof($columns)-1){
+                            $mesg .= _PAR[1];
+                        }
                     }
-                    $mesg .= _SEL[4] . _SEL[1]. $table;
+                    $mesg .= _PAR[2] . _SEL[1]. $table;
                 }
                 else{
-                    $mesg .= "*" . _SEL[1] . $table;
+                    $mesg .= " * " . _SEL[1] . $table;
                 }
-                if(isset($condition)){
+                if($condition!=""){
                     $mesg .= $condition;
                 }
-                parent::query($mesg);
+                $result = parent::query($mesg);
+                return $result;
             }
         }
         public function delete($table, $condition){
@@ -81,7 +91,7 @@
                 $mesg .= _DEL[0];
                 $mesg .= _DEL[1];
                 $mesg .= $table;
-                if(isset($condition)){
+                if($condition != ""){
                     $mesg .= " ". $condition;
                 }
                 parent::query($mesg);

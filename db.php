@@ -32,6 +32,10 @@
         //query basic msg
         public function query($m) {
             $result = $this -> connect -> query ($m) or die ("No se ha podido seleccionar lo que busca en la base de datos". $this -> connect -> error);
+            if(gettype($result) != 'boolean'){
+                $result = $result -> fetch_all(MYSQLI_NUM);
+            }
+            return $result;
         }
   
         public function close(){
